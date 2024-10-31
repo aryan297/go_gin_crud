@@ -54,3 +54,55 @@ func getEventById(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": "get successfully", "event": event})
 
 }
+
+func updateEvents(context *gin.Context) {
+
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Invalid ID"})
+		return
+	}
+	_, err = models.GetEventById(eventId)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Error in request", "error": err})
+		return
+	}
+	var updatedEvents models.Event
+
+	err = context.ShouldBindJSON(&updatedEvents)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Error in request", "error": err})
+		return
+	}
+	updatedEvents.Id = eventId
+	eventData, err := updatedEvents.UpdateEvents()
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Error in updating data", "error": err})
+		return
+	}
+
+	context.JSON(http.StatusCreated, gin.H{"message": "get successfully", "event": eventData})
+}
+
+func DeleteEvents(context *gin.Context) {
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "Error in request", "error": err})
+		return
+	}
+	_, err = models.GetEventById(eventId)
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"message": "event not found", "error": err})
+		return
+	}
+	var deleteEvents models.Event
+	deleteEvents.Id = eventId
+	err = deleteEvents.DeleteEvents()
+	if err != nil {
+		context.JSON(http.StatusBadGateway, gin.H{"message": "error in updating data", "error": err})
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": "Event deleted successfully"})
+
+}
