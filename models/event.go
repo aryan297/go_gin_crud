@@ -15,9 +15,9 @@ type Event struct {
 	UserId      int
 }
 
-var events = []Event{}
+//var events = []Event{}
 
-func (e Event) StoreEvents() error {
+func (e *Event) StoreEvents() error {
 	query := `INSERT INTO events("name","description","location","dateTime","user_id") VALUES(?,?,?,?,?)`
 
 	stmt, err := db.DB.Prepare(query)
@@ -30,8 +30,11 @@ func (e Event) StoreEvents() error {
 		return err
 	}
 	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
 	e.Id = id
-	return err
+	return nil
 }
 
 func GetEvents() ([]Event, error) {
